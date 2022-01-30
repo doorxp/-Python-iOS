@@ -1,0 +1,76 @@
+diff -Nru orig/configure modified/configure
+--- orig/configure	2022-01-14 02:52:14.000000000 +0800
++++ modified/configure	2022-01-27 17:43:15.000000000 +0800
+@@ -3335,6 +3335,9 @@
+        # a lot of different things including 'define_xopen_source'
+        # in the case statement below.
+ 	case "$host" in
++   *-*-darwin)
++    ac_sys_system=darwin
++    ;;
+ 	*-*-linux-android*)
+ 		ac_sys_system=Linux-android
+ 		;;
+@@ -3382,6 +3385,9 @@
+
+ if test "$cross_compiling" = yes; then
+ 	case "$host" in
++  *-*-darwin)
++    _host_cpu=darwin
++    ;;
+ 	*-*-linux*)
+ 		case "$host_cpu" in
+ 		arm*)
+@@ -8210,7 +8216,7 @@
+ $as_echo "$ac_cv_search_opendir" >&6; }
+ ac_res=$ac_cv_search_opendir
+ if test "$ac_res" != no; then :
+-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
++  test "$ac_res" = "none required"
+
+ fi
+
+@@ -8267,7 +8273,7 @@
+ $as_echo "$ac_cv_search_opendir" >&6; }
+ ac_res=$ac_cv_search_opendir
+ if test "$ac_res" != no; then :
+-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
++  test "$ac_res" = "none required"
+
+ fi
+
+@@ -10335,7 +10341,7 @@
+ $as_echo "$ac_cv_search_sem_init" >&6; }
+ ac_res=$ac_cv_search_sem_init
+ if test "$ac_res" != no; then :
+-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
++  test "$ac_res" = "none required"
+
+ fi
+
+@@ -13291,7 +13297,7 @@
+ $as_echo "$ac_cv_search_crypt" >&6; }
+ ac_res=$ac_cv_search_crypt
+ if test "$ac_res" != no; then :
+-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
++  test "$ac_res" = "none required"
+
+ fi
+
+@@ -13347,7 +13353,7 @@
+ $as_echo "$ac_cv_search_crypt_r" >&6; }
+ ac_res=$ac_cv_search_crypt_r
+ if test "$ac_res" != no; then :
+-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
++  test "$ac_res" = "none required"
+
+ fi
+
+@@ -17593,7 +17599,7 @@
+ $as_echo "$ac_cv_search_shm_open" >&6; }
+ ac_res=$ac_cv_search_shm_open
+ if test "$ac_res" != no; then :
+-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
++  test "$ac_res" = "none required"
+
+ fi

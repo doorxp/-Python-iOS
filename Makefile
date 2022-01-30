@@ -255,25 +255,29 @@ $$(PYTHON_DIR-$1)/Makefile: downloads/Python-$(PYTHON_VERSION).tgz $$(TARGET_PYT
 
 	cd $$(PYTHON_DIR-$1)
 
-	ARCH=$$(subst .,,$$(suffix $1))
+	patch $$(PYTHON_DIR-$1)/configure < $$(PROJECT_DIR)/patch/configure
 
-	export READELF="$$(READELF-$1)"
-	export AR="$$(AR-$1)"
+	
 	export LLVM_PROFDATA="$$(LLVM_PROFDATA-$1)"
-	./configure --prefix=$MYHOME/Python CC=$CC LDFLAGS="$LDFLAGS" CFLAGS="$CFLAGS" \
+	cd $$(PYTHON_DIR-$1) && ./configure --prefix=$$(TARGET_PYTHON_PREFIX-$1) \
+	CC="xcrun -sdk $$(SDK-$1) clang -arch $$(ARCH-$1)" \
+	READELF="xcrun -sdk $$(SDK-$1) readelf" \
+	AR="xcrun -sdk $$(SDK-$1) AR" \
+	LDFLAGS=$$(LDFLAGS-$1) CFLAGS="$$(CFLAGS-$1)" \
 --enable-ipv6 --disable-test-modules --without-system-libmpdec --with-dtrace \
 --with-static-libpython --with-system-expat \
 --enable-optimizations --disable-test-modules --without-cxx-main \
---host=$(ARCH)-apple-darwin --build=$(ARCH)-apple-darwin --with-openssl-rpath=auto \
+--host=$$(ARCH-$1)-apple-darwin \
+--build=$$(ARCH-$1)-apple-darwin --with-openssl-rpath=auto \
 cross_compiling=yes \
 ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no ac_cv_type_long_double=no ac_cv_func_getentropy=no ac_cv_func_timegm=yes ac_cv_func_clock=yes
 
-	make install
-
+	
 
 # Build Python
 $$(TARGET_PYTHON_PREFIX-$1)/lib/libPython$(PYTHON_VER).a: $$(TARGET_OPENSSL_PREFIX-$1)/lib/libssl.a $$(TARGET_OPENSSL_PREFIX-$1)/lib/libcrypto.a $$(TARGET_BZIP2_PREFIX-$1)/lib/libbz2.a $$(TARGET_XZ_PREFIX-$1)/lib/liblzma.a $$(TARGET_FFI_PREFIX-$1)/lib/libffi.a $$(PYTHON_DIR-$1)/Makefile
 	# Build target Python
+	sed -ie '/HAVE_SYSTEM.*1/s!^.*!//&!' $$(PYTHON_DIR-$1)/Modules/posixmodule.c
 	cd $$(PYTHON_DIR-$1) && make install
 
 # Dump vars (for test)
@@ -314,4 +318,6 @@ Python.xcframework:$(foreach target,$(TARGETS),$(PROJECT_DIR)/$(target)/Python/l
 
 # xcfamework:$(PROJECT_DIR)/xcframework/xz.xcfamework $(PROJECT_DIR)/xcframework/bzip2.xcframework $(PROJECT_DIR)/xcframework/ffi.xcframework: $(PROJECT_DIR)/xcframework/OpenSSL.xcfamework $(PROJECT_DIR)/xcframework/Python.xcfamework
 
-all:*.xcfamework
+xcframework:xz.xcframework bzip2.xcframework ffi.xcframework OpenSSL.xcframework Python.xcframework
+
+all:xcframework
