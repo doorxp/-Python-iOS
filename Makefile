@@ -307,7 +307,7 @@ OpenSSL.xcframework:$(foreach target,$(TARGETS),$(PROJECT_DIR)/$(target)/OpenSSL
 	rm -rf $(PROJECT_DIR)/xcframework/$@
 	xcodebuild -create-xcframework -output $(PROJECT_DIR)/xcframework/$@ $(foreach i, $^, -library $i -headers $(dir $i)../include)
 
-Python.xcfamework:$(foreach target,$(TARGETS),$$(PROJECT_DIR)/$(target)/lib/libPython$(PYTHON_VER).a)
+Python.xcframework:$(foreach target,$(TARGETS),$(PROJECT_DIR)/$(target)/Python/lib/libPython$(PYTHON_VER).a)
 	-if [ ! -d "$(PROJECT_DIR)/xcframework" ]; then mkdir -p $(PROJECT_DIR)/xcframework fi
 	rm -rf $(PROJECT_DIR)/xcframework/$@
 	xcodebuild -create-xcframework -output $(PROJECT_DIR)/xcframework/$@ $(foreach i, $^, -library $i -headers $(dir $i)../include)
