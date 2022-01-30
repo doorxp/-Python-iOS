@@ -127,15 +127,10 @@ define build-target
 	TARGET_FFI_PREFIX-$1		:=$$(MYHOME)/ffi
 	TARGET_PYTHON_PREFIX-$1		:=$$(MYHOME)/Python
 
-
-#-I$$(TARGET_OPENSSL_PREFIX-$)/include -I$$(TARGET_XZ_PREFIX-$1)/include -I$$(TARGET_BZIP2_PREFIX-$1)/include  -I$$(TARGET_FFI_PREFIX-$1)/include
-#-L$$(TARGET_OPENSSL_PREFIX-$1)/lib -L$$(TARGET_BZIP2_PREFIX-$1)/lib -L$$(TARGET_XZ_PREFIX-$1)/lib -lbz2 -llzma -lssl -lcrypto
-
-
 	CFLAGS-$1 :=$$(FLAGSARGS) -fembed-bitcode -I/usr/include/ -include _ctype.h  -include _types.h -include AvailabilityMacros.h -include stdio.h -include string.h -include netdb.h -include time.h -include sys/syscall.h -include sys/socket.h -include sys/types.h -std=gnu11 -stdlib=libstdc++
 	CPPFLAGS-$1 :=$$(CFLAGS-$1)
 
-	LDFLAGS-$1 :="$$(FLAGSARGS)  -L/usr/lib/ -lcurses -target $$(XTARGET)"
+	LDFLAGS-$1 :=$$(FLAGSARGS)  -L/usr/lib/ -lcurses -target $$(XTARGET)
 
 $$(TARGET_OPENSSL_PREFIX-$1):
 	mkdir -p $$@
@@ -163,7 +158,7 @@ $$(OPENSSL_DIR-$1)/Makefile: downloads/openssl-$(OPENSSL_VERSION).tgz $$(TARGET_
 		CROSS_TOP="$$(dir $$(SDK_ROOT-$1)).." \
 		CROSS_SDK="$$(notdir $$(SDK_ROOT-$1))" \
 		./Configure darwin64-$$(ARCH-$1)-cc --prefix=$$(TARGET_OPENSSL_PREFIX-$1) \
-		LDFLAGS=$$(LDFLAGS-$1) \
+		LDFLAGS="$$(LDFLAGS-$1)" \
 		CFLAGS="$$(CFLAGS-$1)" \
 		CXXFLAGS="$$(CFLAGS-$1)" \
 		no-tests no-stdio no-ui-console no-unit-test no-external-tests no-dynamic-engine no-asm no-shared no-dso no-hw no-engine --openssldir=$$(TARGET_OPENSSL_PREFIX-$1)
@@ -257,25 +252,25 @@ $$(PYTHON_DIR-$1)/Makefile: downloads/Python-$(PYTHON_VERSION).tgz $$(TARGET_PYT
 
 	patch $$(PYTHON_DIR-$1)/configure < $$(PROJECT_DIR)/patch/configure
 
-	
-	export LLVM_PROFDATA="$$(LLVM_PROFDATA-$1)"
-	cd $$(PYTHON_DIR-$1) && ./configure --prefix=$$(TARGET_PYTHON_PREFIX-$1) \
+	cd $$(PYTHON_DIR-$1) && ./configure cross_compiling=yes --prefix=$$(TARGET_PYTHON_PREFIX-$1) \
 	CC="xcrun -sdk $$(SDK-$1) clang -arch $$(ARCH-$1)" \
+	LLVM_PROFDATA="xcrun -sdk $$(SDK-$1) llvm-profdata" \
 	READELF="xcrun -sdk $$(SDK-$1) readelf" \
 	AR="xcrun -sdk $$(SDK-$1) AR" \
-	LDFLAGS=$$(LDFLAGS-$1) CFLAGS="$$(CFLAGS-$1)" \
+	LDFLAGS="$$(LDFLAGS-$1) -L$$(TARGET_OPENSSL_PREFIX-$1)/lib -L$$(TARGET_BZIP2_PREFIX-$1)/lib -L$$(TARGET_XZ_PREFIX-$1)/lib -lbz2 -llzma -lssl -lcrypto" \
+	CFLAGS="$$(CFLAGS-$1) -I$$(TARGET_OPENSSL_PREFIX-$1)/include -I$$(TARGET_XZ_PREFIX-$1)/include -I$$(TARGET_BZIP2_PREFIX-$1)/include  -I$$(TARGET_FFI_PREFIX-$1)/include" \
 --enable-ipv6 --disable-test-modules --without-system-libmpdec --with-dtrace \
 --with-static-libpython --with-system-expat \
---enable-optimizations --disable-test-modules --without-cxx-main \
+--enable-optimizations --disable-test-modules  --without-readline --without-cxx-main \
 --host=$$(ARCH-$1)-apple-darwin \
---build=$$(ARCH-$1)-apple-darwin --with-openssl-rpath=auto \
-cross_compiling=yes \
+--build=$$(ARCH-$1)-apple-darwin \
+--with-openssl-rpath=auto \
 ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no ac_cv_type_long_double=no ac_cv_func_getentropy=no ac_cv_func_timegm=yes ac_cv_func_clock=yes
 
 	
 
 # Build Python
-$$(TARGET_PYTHON_PREFIX-$1)/lib/libPython$(PYTHON_VER).a: $$(TARGET_OPENSSL_PREFIX-$1)/lib/libssl.a $$(TARGET_OPENSSL_PREFIX-$1)/lib/libcrypto.a $$(TARGET_BZIP2_PREFIX-$1)/lib/libbz2.a $$(TARGET_XZ_PREFIX-$1)/lib/liblzma.a $$(TARGET_FFI_PREFIX-$1)/lib/libffi.a $$(PYTHON_DIR-$1)/Makefile
+$$(TARGET_PYTHON_PREFIX-$1)/lib/libPython$(PYTHON_VER).a: $$(TARGET_OPENSSL_PREFIX-$1)/lib/libssl.a $$(TARGET_OPENSSL_PREFIX-$1)/lib/libcrypto.a $$(TARGET_BZIP2_PREFIX-$1)/lib/libbz2.a $$(TARGET_XZ_PREFIX-$1)/lib/liblzma.a $$(TARGET_FFI_PREFIX-$1)/lib/libffi.a $$(PYTHON_DIR-$1)/Makefile 
 	# Build target Python
 	sed -ie '/HAVE_SYSTEM.*1/s!^.*!//&!' $$(PYTHON_DIR-$1)/Modules/posixmodule.c
 	cd $$(PYTHON_DIR-$1) && make install

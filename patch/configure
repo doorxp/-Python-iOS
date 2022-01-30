@@ -5,7 +5,7 @@ diff -Nru orig/configure modified/configure
         # a lot of different things including 'define_xopen_source'
         # in the case statement below.
  	case "$host" in
-+   *-*-darwin)
++   *-*-darwin*)
 +    ac_sys_system=darwin
 +    ;;
  	*-*-linux-android*)
@@ -15,7 +15,7 @@ diff -Nru orig/configure modified/configure
 
  if test "$cross_compiling" = yes; then
  	case "$host" in
-+  *-*-darwin)
++  *-*-darwin*)
 +    _host_cpu=darwin
 +    ;;
  	*-*-linux*)
