@@ -66,3 +66,8 @@ fastlane/test_output
 # https://github.com/johnno1962/injectionforxcode
 
 iOSInjectionProject/
+downloads/
+iphoneos.arm64/
+iphonesimulator.x86_64/
+xcframework/
+.DS_Store
