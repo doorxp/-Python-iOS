@@ -161,7 +161,7 @@ $$(OPENSSL_DIR-$1)/Makefile: downloads/openssl-$(OPENSSL_VERSION).tgz $$(TARGET_
 		LDFLAGS="$$(LDFLAGS-$1)" \
 		CFLAGS="$$(CFLAGS-$1)" \
 		CXXFLAGS="$$(CFLAGS-$1)" \
-		no-tests no-stdio no-ui-console no-unit-test no-external-tests no-dynamic-engine no-asm no-shared no-dso no-hw no-engine --openssldir=$$(TARGET_OPENSSL_PREFIX-$1)
+		no-tests no-ui-console no-unit-test no-external-tests no-dynamic-engine no-asm no-shared no-dso no-hw no-engine --openssldir=$$(TARGET_OPENSSL_PREFIX-$1)
 
 # Build OpenSSL
 $$(TARGET_OPENSSL_PREFIX-$1)/lib/libssl.a $$(TARGET_OPENSSL_PREFIX-$1)/lib/libcrypto.a: $$(OPENSSL_DIR-$1)/Makefile
@@ -252,20 +252,26 @@ $$(PYTHON_DIR-$1)/Makefile: downloads/Python-$(PYTHON_VERSION).tgz $$(TARGET_PYT
 
 	patch $$(PYTHON_DIR-$1)/configure < $$(PROJECT_DIR)/patch/configure
 
+
+	cp $$(PROJECT_DIR)/patch/Setup $$(PYTHON_DIR-$1)/Modules/Setup
+
+	sed -ie 's/static int translate = NO;/static int translate = NO;\n# ifdef __APPLE__ \n# define s6_addr32 __u6_addr.__u6_addr32\n# define IN6ADDR_GAI_ANY_INIT IN6ADDR_ANY_INIT\n# endif/' $$(PYTHON_DIR-$1)/Modules/getaddrinfo.c
+
+
 	cd $$(PYTHON_DIR-$1) && ./configure cross_compiling=yes --prefix=$$(TARGET_PYTHON_PREFIX-$1) \
 	CC="xcrun -sdk $$(SDK-$1) clang -arch $$(ARCH-$1)" \
 	LLVM_PROFDATA="xcrun -sdk $$(SDK-$1) llvm-profdata" \
 	READELF="xcrun -sdk $$(SDK-$1) readelf" \
 	AR="xcrun -sdk $$(SDK-$1) AR" \
 	LDFLAGS="$$(LDFLAGS-$1) -L$$(TARGET_OPENSSL_PREFIX-$1)/lib -L$$(TARGET_BZIP2_PREFIX-$1)/lib -L$$(TARGET_XZ_PREFIX-$1)/lib -lbz2 -llzma -lssl -lcrypto" \
-	CFLAGS="$$(CFLAGS-$1) -I$$(TARGET_OPENSSL_PREFIX-$1)/include -I$$(TARGET_XZ_PREFIX-$1)/include -I$$(TARGET_BZIP2_PREFIX-$1)/include  -I$$(TARGET_FFI_PREFIX-$1)/include" \
+	CFLAGS="$$(CFLAGS-$1) -I$$(TARGET_OPENSSL_PREFIX-$1)/include -I$$(TARGET_XZ_PREFIX-$1)/include -I$$(TARGET_BZIP2_PREFIX-$1)/include  -I$$(TARGET_FFI_PREFIX-$1)/include -Wno-implicit-function-declaration" \
 --enable-ipv6 --disable-test-modules --without-system-libmpdec --with-dtrace \
 --with-static-libpython --with-system-expat \
 --enable-optimizations --disable-test-modules  --without-readline --without-cxx-main \
 --host=$$(ARCH-$1)-apple-darwin \
 --build=$$(ARCH-$1)-apple-darwin \
 --with-openssl-rpath=auto \
-ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no ac_cv_type_long_double=no ac_cv_func_getentropy=no ac_cv_func_timegm=yes ac_cv_func_clock=yes
+ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no ac_cv_type_long_double=no ac_cv_func_getentropy=no ac_cv_func_timegm=yes ac_cv_func_clock=yes ac_cv_enable_implicit_function_declaration_error=no
 
 	
 
